@@ -22,7 +22,7 @@ import br.com.cybersociety.testedesenvolvedormobile.fragment.DummyContent.DummyI
 public class MovieFragment extends Fragment {
 
     // TODO: Customize parameters
-    private int mColumnCount = 1;
+    private int mColumnCount = 2;
 
     private OnListFragmentInteractionListener mListener;
 
