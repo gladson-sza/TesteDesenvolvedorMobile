@@ -13,8 +13,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import java.util.prefs.Preferences;
-
 import br.com.cybersociety.testedesenvolvedormobile.R;
 import br.com.cybersociety.testedesenvolvedormobile.fragment.MovieFragment;
 import br.com.cybersociety.testedesenvolvedormobile.fragment.ProfileFragment;
@@ -59,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
     private void init() {
 
 
-        SharedPreferences p = getSharedPreferences("NAME_PREFERENCE",MODE_PRIVATE);
+        SharedPreferences p = getSharedPreferences("NAME_PREFERENCE", MODE_PRIVATE);
         name = p.getString("name", "");
 
         pf = new ProfileFragment();
@@ -76,8 +74,7 @@ public class MainActivity extends AppCompatActivity {
         if (name == null || name.isEmpty()) {
             transaction.add(R.id.frameLayout, pf);
             navView.setSelectedItemId(R.id.navigation_profile);
-        }
-        else transaction.add(R.id.frameLayout, mf);
+        } else transaction.add(R.id.frameLayout, mf);
 
         transaction.commit();
     }
@@ -97,13 +94,9 @@ public class MainActivity extends AppCompatActivity {
      */
     public void changeFragment(Fragment fragment) {
 
-        if (name == null || name.isEmpty()) {
-            Toast.makeText(getApplicationContext(), "Você não informou o seu nome", Toast.LENGTH_SHORT).show();
-        } else {
-            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            transaction.replace(R.id.frameLayout, fragment);
-            transaction.commit();
-        }
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.frameLayout, fragment);
+        transaction.commit();
 
 
     }
