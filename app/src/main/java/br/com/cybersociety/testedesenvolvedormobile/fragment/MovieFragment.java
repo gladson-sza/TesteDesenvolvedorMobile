@@ -15,6 +15,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 
+import com.miguelcatalan.materialsearchview.MaterialSearchView;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,6 +35,7 @@ import java.util.Date;
 import java.util.List;
 
 import br.com.cybersociety.testedesenvolvedormobile.R;
+import br.com.cybersociety.testedesenvolvedormobile.activity.MainActivity;
 import br.com.cybersociety.testedesenvolvedormobile.activity.MovieInformationActivity;
 import br.com.cybersociety.testedesenvolvedormobile.adapter.GridMovieAdapter;
 import br.com.cybersociety.testedesenvolvedormobile.adapter.LinearMovieAdapter;
@@ -47,7 +50,11 @@ public class MovieFragment extends Fragment {
     private static int current_layout;
 
     private RecyclerView recyclerView;
+    private MaterialSearchView searchView;
+
     private List<Movie> movies = new ArrayList<>();
+    private List<Movie> moviesSearch = new ArrayList<>();
+    private List<Movie> currentListView = new ArrayList<>();
 
     private GridMovieAdapter gridMovieAdapter;
     private LinearMovieAdapter linearMovieAdapter;
@@ -88,6 +95,9 @@ public class MovieFragment extends Fragment {
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu, menu);
 
+        MenuItem item = menu.findItem(R.id.menu_search);
+        searchView.setMenuItem(item);
+
         if (current_layout == LINEAR_LAYOUT) menu.getItem(1).setIcon(R.drawable.ic_grid_white_24dp);
         else menu.getItem(1).setIcon(R.drawable.ic_view_list_white_24dp);
 
@@ -99,29 +109,35 @@ public class MovieFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_movie_list, container, false);
 
-        recyclerView = view.findViewById(R.id.list);
-        createLayout();
+        createLayout(view);
 
         // Chama a API
-        MyTask myTask = new MyTask();
-        myTask.execute("https://api.themoviedb.org/3/movie/popular?api_key=<<api_key>>&language=pt-BR&page=1");
+        MyTaskList myTaskList = new MyTaskList();
+        myTaskList.execute("https://api.themoviedb.org/3/movie/popular?api_key=<<api_key>>&language=pt-BR&page=1");
 
 
         return view;
     }
 
-    private void createLayout() {
+    private void createLayout(View view) {
 
-        linearMovieAdapter = new LinearMovieAdapter(movies, getActivity());
-        gridMovieAdapter = new GridMovieAdapter(movies, getActivity());
+        currentListView = movies;
 
+        linearMovieAdapter = new LinearMovieAdapter(currentListView, getActivity());
+        gridMovieAdapter = new GridMovieAdapter(currentListView, getActivity());
+
+        recyclerView = view.findViewById(R.id.list);
+
+        searchView = getActivity().findViewById(R.id.search_view);
+
+        recyclerView.setHasFixedSize(true);
         recyclerView.addOnItemTouchListener(
                 new RecyclerItemClickListener(getActivity(), recyclerView,
                         new RecyclerItemClickListener.OnItemClickListener() {
                             @Override
                             public void onItemClick(View view, int position) {
 
-                                Movie movie = movies.get(position);
+                                Movie movie = currentListView.get(position);
 
                                 try {
                                     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
@@ -164,6 +180,49 @@ public class MovieFragment extends Fragment {
             recyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 2));
             recyclerView.setAdapter(gridMovieAdapter);
         }
+
+            searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
+                @Override
+                public boolean onQueryTextSubmit(String query) {
+                    MyTaskSearch myTaskSearch = new MyTaskSearch();
+                    myTaskSearch.execute("https://api.themoviedb.org/3/search/movie?api_key=<<api_key>>&language=pt-BR&query=" + query + "&page=1&include_adult=false");
+
+                    return true;
+                }
+
+                @Override
+                public boolean onQueryTextChange(String newText) {
+                    return false;
+                }
+            });
+
+            searchView.setOnSearchViewListener(new MaterialSearchView.SearchViewListener() {
+                @Override
+                public void onSearchViewShown() {
+                    MainActivity ma = (MainActivity) getActivity();
+
+                    currentListView.clear();
+                    linearMovieAdapter.notifyDataSetChanged();
+                    recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+                    recyclerView.setAdapter(linearMovieAdapter);
+
+                    ma.hideNavigation();
+                    setHasOptionsMenu(false);
+                }
+
+                @Override
+                public void onSearchViewClosed() {
+                    MainActivity ma = (MainActivity) getActivity();
+
+                    MyTaskList myTaskList = new MyTaskList();
+                    myTaskList.execute("https://api.themoviedb.org/3/movie/popular?api_key=<<api_key>>&language=pt-BR&page=1");
+
+                    ma.showNavigation();
+                    setHasOptionsMenu(true);
+                }
+            });
+
+
     }
 
     // Evento que modifica o layout
@@ -182,7 +241,97 @@ public class MovieFragment extends Fragment {
 
     }
 
-    private class MyTask extends AsyncTask<String, Void, String> {
+    /**
+     * Classe interna para realizar pesquisa
+     */
+    private class MyTaskSearch extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected String doInBackground(String... strings) {
+            String stringUrl = strings[0];
+            InputStream inputStream = null;
+            InputStreamReader inputStreamReader = null;
+            StringBuffer buffer = new StringBuffer();
+
+            try {
+                URL url = new URL(stringUrl);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+                inputStream = connection.getInputStream();
+                inputStreamReader = new InputStreamReader(inputStream);
+                BufferedReader reader = new BufferedReader(inputStreamReader);
+                String line;
+
+                while ((line = reader.readLine()) != null) {
+                    buffer.append(line);
+                }
+
+
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return buffer.toString();
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            long id;
+            boolean adult;
+            String originalTitle;
+            String title;
+            String originalLanguage;
+            String overview;
+            double popularity;
+            double rating;
+
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            Date releaseDate;
+
+            try {
+                JSONObject jsonObject = new JSONObject(s);
+
+                JSONArray keyValue = jsonObject.getJSONArray("results");
+
+                moviesSearch.clear(); // Limpa para garantir que não haverá duplicidade
+
+                for (int i = 0; i < jsonObject.length(); i++) {
+                    JSONObject jsonObjectValue = keyValue.getJSONObject(i);
+
+                    id = jsonObjectValue.getLong("id");
+                    adult = jsonObjectValue.getBoolean("adult");
+                    originalLanguage = jsonObjectValue.getString("original_language");
+                    originalTitle = jsonObjectValue.getString("original_title");
+                    title = jsonObjectValue.getString("title");
+                    overview = jsonObjectValue.getString("overview");
+                    popularity = jsonObjectValue.getDouble("popularity");
+                    rating = jsonObjectValue.getDouble("vote_average");
+                    releaseDate = sdf.parse(jsonObjectValue.getString("release_date"));
+
+                    Movie movie = new Movie(id, adult, originalLanguage, originalTitle, title, overview, popularity, rating, releaseDate);
+                    moviesSearch.add(movie);
+                }
+
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+            currentListView = moviesSearch;
+            recyclerView.setAdapter(new LinearMovieAdapter(currentListView, getActivity()));
+            linearMovieAdapter.notifyDataSetChanged();
+        }
+    }
+
+    /**
+     * Classe interna para listar os filmes populares.
+     */
+    private class MyTaskList extends AsyncTask<String, Void, String> {
 
         @Override
         protected String doInBackground(String... strings) {
@@ -263,6 +412,7 @@ public class MovieFragment extends Fragment {
                 e.printStackTrace();
             }
 
+            currentListView = movies;
             linearMovieAdapter.notifyDataSetChanged();
             gridMovieAdapter.notifyDataSetChanged();
         }
