@@ -51,7 +51,7 @@ public class LinearMovieAdapter extends RecyclerView.Adapter<LinearMovieAdapter.
     public int getItemCount() { return movieList.size(); }
 
     /**
-     * Classe interna para inicialização dos componentes do adapter_quimical_information.
+     * Classe interna para inicialização dos componentes do adapter.
      */
     public class MyViewHolder extends RecyclerView.ViewHolder {
 

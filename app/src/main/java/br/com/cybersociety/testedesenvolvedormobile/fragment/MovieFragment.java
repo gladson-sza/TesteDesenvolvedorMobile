@@ -10,7 +10,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import br.com.cybersociety.testedesenvolvedormobile.R;
+import br.com.cybersociety.testedesenvolvedormobile.adapter.GridMovieAdapter;
+import br.com.cybersociety.testedesenvolvedormobile.adapter.LinearMovieAdapter;
+import br.com.cybersociety.testedesenvolvedormobile.entities.Movie;
 import br.com.cybersociety.testedesenvolvedormobile.fragment.DummyContent.DummyItem;
 
 /**
@@ -21,10 +27,15 @@ import br.com.cybersociety.testedesenvolvedormobile.fragment.DummyContent.DummyI
  */
 public class MovieFragment extends Fragment {
 
-    // TODO: Customize parameters
-    private int mColumnCount = 2;
+    private static final int LINEAR_LAYOUT = 0;
+    private static final int GRID_LAYOUT = 1;
 
+    private int current_layout;
+
+    private RecyclerView recyclerView;
     private OnListFragmentInteractionListener mListener;
+
+    private List<Movie> movies = new ArrayList<>();
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -44,18 +55,47 @@ public class MovieFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_movie_list, container, false);
 
+        movies.add(new Movie());
+        movies.add(new Movie());
+        movies.add(new Movie());
+        movies.add(new Movie());
+        movies.add(new Movie());
+        movies.add(new Movie());
+
+        movies.add(new Movie());
+        movies.add(new Movie());
+        movies.add(new Movie());
+        movies.add(new Movie());
+        movies.add(new Movie());
+        movies.add(new Movie());
+
         // Set the adapter
         if (view instanceof RecyclerView) {
             Context context = view.getContext();
-            RecyclerView recyclerView = (RecyclerView) view;
-            if (mColumnCount <= 1) {
+            recyclerView = (RecyclerView) view;
+            if (current_layout == LINEAR_LAYOUT) {
                 recyclerView.setLayoutManager(new LinearLayoutManager(context));
+                recyclerView.setAdapter(new LinearMovieAdapter(movies, getActivity()));
             } else {
-                recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
+                recyclerView.setLayoutManager(new GridLayoutManager(context, 2));
+                recyclerView.setAdapter(new GridMovieAdapter(movies, getActivity()));
             }
-            recyclerView.setAdapter(new MyMovieRecyclerViewAdapter(DummyContent.ITEMS, mListener));
+
         }
         return view;
+    }
+
+    public void changeLayout() {
+
+        if (current_layout == LINEAR_LAYOUT) {
+            recyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 2));
+            recyclerView.setAdapter(new GridMovieAdapter(movies, getActivity()));
+            current_layout = GRID_LAYOUT;
+        } else {
+            recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+            recyclerView.setAdapter(new LinearMovieAdapter(movies, getActivity()));
+            current_layout = LINEAR_LAYOUT;
+        }
     }
 
     /*

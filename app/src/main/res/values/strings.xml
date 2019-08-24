@@ -1,11 +1,11 @@
 <resources>
     <string name="app_name">TesteDesenvolvedorMobile</string>
-    <string name="title_home">Home</string>
-    <string name="title_dashboard">Dashboard</string>
-    <string name="title_notifications">Notifications</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="_0">0</string>
     <string name="titiulo_filme">Título Filme</string>
+    <string name="nome">Nome</string>
+    <string name="pesquisar">Pesquisar</string>
+    <string name="visualiza_o">Visualização</string>
 </resources>

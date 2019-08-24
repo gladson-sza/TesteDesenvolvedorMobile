@@ -54,7 +54,7 @@ public class GridMovieAdapter extends RecyclerView.Adapter<GridMovieAdapter.MyVi
     public int getItemCount() { return movieList.size(); }
 
     /**
-     * Classe interna para inicialização dos componentes do adapter_quimical_information.
+     * Classe interna para inicialização dos componentes do adapter.
      */
     public class MyViewHolder extends RecyclerView.ViewHolder {
 

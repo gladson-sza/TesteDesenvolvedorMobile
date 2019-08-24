@@ -1,0 +1,15 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="br.com.cybersociety.testedesenvolvedormobile.activity.MainActivity">
+    <item
+        android:id="@+id/menu_search"
+        android:icon="@drawable/ic_search_white_24dp"
+        android:title="@string/pesquisar"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/menu_change_layout"
+        android:icon="@drawable/ic_grid_white_24dp"
+        android:title="@string/visualiza_o"
+        app:showAsAction="ifRoom" />
+</menu>
