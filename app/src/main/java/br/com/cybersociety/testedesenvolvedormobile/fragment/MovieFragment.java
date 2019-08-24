@@ -1,22 +1,40 @@
 package br.com.cybersociety.testedesenvolvedormobile.fragment;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import br.com.cybersociety.testedesenvolvedormobile.R;
 import br.com.cybersociety.testedesenvolvedormobile.adapter.GridMovieAdapter;
 import br.com.cybersociety.testedesenvolvedormobile.adapter.LinearMovieAdapter;
-import br.com.cybersociety.testedesenvolvedormobile.entities.Movie;
+import br.com.cybersociety.testedesenvolvedormobile.model.entities.Movie;
 import br.com.cybersociety.testedesenvolvedormobile.fragment.DummyContent.DummyItem;
 
 /**
@@ -30,12 +48,14 @@ public class MovieFragment extends Fragment {
     private static final int LINEAR_LAYOUT = 0;
     private static final int GRID_LAYOUT = 1;
 
-    private int current_layout;
+    private static int current_layout;
 
     private RecyclerView recyclerView;
+    private List<Movie> movies = new ArrayList<>();
     private OnListFragmentInteractionListener mListener;
 
-    private List<Movie> movies = new ArrayList<>();
+    private GridMovieAdapter gridMovieAdapter;
+    private LinearMovieAdapter linearMovieAdapter;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -47,7 +67,35 @@ public class MovieFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        int id = item.getItemId();
+
+        switch (id) {
+            case R.id.menu_change_layout:
+                changeLayout();
+                if (current_layout == LINEAR_LAYOUT) item.setIcon(R.drawable.ic_grid_white_24dp);
+                else item.setIcon(R.drawable.ic_view_list_white_24dp);
+                break;
+            case R.id.menu_search:
+                break;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu, menu);
+
+        if (current_layout == LINEAR_LAYOUT) menu.getItem(1).setIcon(R.drawable.ic_grid_white_24dp);
+        else menu.getItem(1).setIcon(R.drawable.ic_view_list_white_24dp);
+
+        super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
@@ -55,66 +103,131 @@ public class MovieFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_movie_list, container, false);
 
-        movies.add(new Movie());
-        movies.add(new Movie());
-        movies.add(new Movie());
-        movies.add(new Movie());
-        movies.add(new Movie());
-        movies.add(new Movie());
+        linearMovieAdapter = new LinearMovieAdapter(movies, getActivity());
+        gridMovieAdapter = new GridMovieAdapter(movies, getActivity());
+        recyclerView = view.findViewById(R.id.list);
 
-        movies.add(new Movie());
-        movies.add(new Movie());
-        movies.add(new Movie());
-        movies.add(new Movie());
-        movies.add(new Movie());
-        movies.add(new Movie());
+        createLayout();
 
-        // Set the adapter
-        if (view instanceof RecyclerView) {
-            Context context = view.getContext();
-            recyclerView = (RecyclerView) view;
-            if (current_layout == LINEAR_LAYOUT) {
-                recyclerView.setLayoutManager(new LinearLayoutManager(context));
-                recyclerView.setAdapter(new LinearMovieAdapter(movies, getActivity()));
-            } else {
-                recyclerView.setLayoutManager(new GridLayoutManager(context, 2));
-                recyclerView.setAdapter(new GridMovieAdapter(movies, getActivity()));
-            }
+        // Chama a API
+        MyTask myTask = new MyTask();
+        myTask.execute("https://api.themoviedb.org/3/movie/popular?api_key=<<api_key>>&language=pt-BR");
 
-        }
+
         return view;
     }
 
-    public void changeLayout() {
+    private void createLayout() {
+        if (current_layout == LINEAR_LAYOUT) {
+            recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+            recyclerView.setAdapter(linearMovieAdapter);
+        } else {
+            recyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 2));
+            recyclerView.setAdapter(gridMovieAdapter);
+        }
+    }
+
+    private void changeLayout() {
 
         if (current_layout == LINEAR_LAYOUT) {
             recyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 2));
-            recyclerView.setAdapter(new GridMovieAdapter(movies, getActivity()));
+            recyclerView.setAdapter(gridMovieAdapter);
             current_layout = GRID_LAYOUT;
+
         } else {
             recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-            recyclerView.setAdapter(new LinearMovieAdapter(movies, getActivity()));
+            recyclerView.setAdapter(linearMovieAdapter);
             current_layout = LINEAR_LAYOUT;
         }
+
     }
 
-    /*
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnListFragmentInteractionListener) {
-            mListener = (OnListFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnListFragmentInteractionListener");
+    private class MyTask extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected String doInBackground(String... strings) {
+
+            String stringUrl = strings[0];
+            InputStream inputStream = null;
+            InputStreamReader inputStreamReader = null;
+            StringBuffer buffer = new StringBuffer();
+
+            try {
+                URL url = new URL(stringUrl);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+                inputStream = connection.getInputStream();
+                inputStreamReader = new InputStreamReader(inputStream);
+                BufferedReader reader = new BufferedReader(inputStreamReader);
+                String line;
+
+                while ((line = reader.readLine()) != null) {
+                    buffer.append(line);
+                }
+
+
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return buffer.toString();
         }
-    }*/
 
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+
+            long id;
+            boolean adult;
+            String originalTitle;
+            String title;
+            String originalLanguage;
+            String overview;
+            double popularity;
+            double rating;
+
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            Date releaseDate;
+
+            try {
+                JSONObject jsonObject = new JSONObject(s);
+
+                JSONArray keyValue = jsonObject.getJSONArray("results");
+
+                movies.clear(); // Limpa para garantir que não haverá duplicidade
+
+                for (int i = 0; i < jsonObject.length(); i++) {
+                    JSONObject jsonObjectValue = keyValue.getJSONObject(i);
+
+                    id = jsonObjectValue.getLong("id");
+                    adult = jsonObjectValue.getBoolean("adult");
+                    originalLanguage = jsonObjectValue.getString("original_language");
+                    originalTitle = jsonObjectValue.getString("original_title");
+                    title = jsonObjectValue.getString("title");
+                    overview = jsonObjectValue.getString("overview");
+                    popularity = jsonObjectValue.getDouble("popularity");
+                    rating = jsonObjectValue.getDouble("vote_average");
+                    releaseDate = sdf.parse(jsonObjectValue.getString("release_date"));
+
+                    Movie movie = new Movie(id, adult, originalLanguage, originalTitle, title, overview, popularity, rating, releaseDate);
+                    movies.add(movie);
+                }
+
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+            linearMovieAdapter.notifyDataSetChanged();
+            gridMovieAdapter.notifyDataSetChanged();
+        }
     }
+
 
     /**
      * This interface must be implemented by activities that contain this

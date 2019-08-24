@@ -12,10 +12,11 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import br.com.cybersociety.testedesenvolvedormobile.R;
+import br.com.cybersociety.testedesenvolvedormobile.fragment.DummyContent;
 import br.com.cybersociety.testedesenvolvedormobile.fragment.MovieFragment;
 import br.com.cybersociety.testedesenvolvedormobile.fragment.ProfileFragment;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MovieFragment.OnListFragmentInteractionListener {
 
     private BottomNavigationView navView;
 
@@ -38,30 +39,6 @@ public class MainActivity extends AppCompatActivity {
             return false;
         }
     };
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-
-        int id = item.getItemId();
-
-        switch (id) {
-            case R.id.menu_change_layout:
-                mf.changeLayout();
-                break;
-            case R.id.menu_search:
-                break;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu, menu);
-
-        return super.onCreateOptionsMenu(menu);
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,5 +76,10 @@ public class MainActivity extends AppCompatActivity {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.frameLayout, fragment);
         transaction.commit();
+    }
+
+    @Override
+    public void onListFragmentInteraction(DummyContent.DummyItem item) {
+
     }
 }

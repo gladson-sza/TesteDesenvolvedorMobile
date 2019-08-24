@@ -14,7 +14,7 @@
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_margin="16dp"
-        android:layout_weight="1"
+        android:layout_weight="0"
         app:srcCompat="@drawable/black_circle" />
 
     <TextView

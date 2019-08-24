@@ -12,7 +12,7 @@ import android.widget.TextView;
 import java.util.List;
 
 import br.com.cybersociety.testedesenvolvedormobile.R;
-import br.com.cybersociety.testedesenvolvedormobile.entities.Movie;
+import br.com.cybersociety.testedesenvolvedormobile.model.entities.Movie;
 
 /**
  * Adapter para as informações reduzidas que aparecerão no RecyclerView.
@@ -42,11 +42,16 @@ public class GridMovieAdapter extends RecyclerView.Adapter<GridMovieAdapter.MyVi
     public void onBindViewHolder(@NonNull MyViewHolder myViewHolder, int i) {
         Movie movie = movieList.get(i);
 
-        // TODO CONFIGURATION
 
-        // myViewHolder.textViewGridMovieTitle.setText(movie.getTitle());
-        // myViewHolder.textViewGridLikesCount.setText(movie.getLikes());
-        // myViewHolder.textViewGridStarsCount.setText(movie.getStars());
+        if (movie.getTitle().length() > 37) {
+            myViewHolder.textViewGridMovieTitle.setText(movie.getTitle().substring(0, 35) + "..." );
+        } else {
+            myViewHolder.textViewGridMovieTitle.setText(movie.getTitle());
+        }
+
+
+        myViewHolder.textViewGridLikesCount.setText(String.format("%.1f", movie.getPopularity()));
+        myViewHolder.textViewGridStarsCount.setText(String.format("%.1f", movie.getRating()));
 
     }
 

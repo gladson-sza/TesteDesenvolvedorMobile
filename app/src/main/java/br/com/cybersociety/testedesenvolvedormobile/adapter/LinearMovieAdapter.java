@@ -12,7 +12,7 @@ import android.widget.TextView;
 import java.util.List;
 
 import br.com.cybersociety.testedesenvolvedormobile.R;
-import br.com.cybersociety.testedesenvolvedormobile.entities.Movie;
+import br.com.cybersociety.testedesenvolvedormobile.model.entities.Movie;
 
 public class LinearMovieAdapter extends RecyclerView.Adapter<LinearMovieAdapter.MyViewHolder> {
 
@@ -39,11 +39,15 @@ public class LinearMovieAdapter extends RecyclerView.Adapter<LinearMovieAdapter.
     public void onBindViewHolder(@NonNull LinearMovieAdapter.MyViewHolder myViewHolder, int i) {
         Movie movie = movieList.get(i);
 
-        // TODO CONFIGURATION
+        if (movie.getTitle().length() > 37) {
+            myViewHolder.textViewLinearMovieTitle.setText(movie.getTitle().substring(0, 35) + "..." );
+        } else {
+            myViewHolder.textViewLinearMovieTitle.setText(movie.getTitle());
+        }
 
-        // myViewHolder.textViewLinearMovieTitle.setText(movie.getTitle());
-        // myViewHolder.textViewLinearLikesCount.setText(movie.getLikes());
-        // myViewHolder.textViewLinearStarsCount.setText(movie.getStars());
+        myViewHolder.textViewLinearMovieTitle.setText(movie.getTitle());
+        myViewHolder.textViewLinearLikesCount.setText(movie.getPopularity().toString());
+        myViewHolder.textViewLinearStarsCount.setText(movie.getRating().toString());
 
     }
 
