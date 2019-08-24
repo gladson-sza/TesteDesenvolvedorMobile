@@ -11,24 +11,38 @@
         android:id="@+id/imageViewMovie"
         android:layout_width="match_parent"
         android:layout_height="140dp"
+        android:scaleType="centerCrop"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/ice_background" />
 
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbarTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#40000000"
+        android:minHeight="?attr/actionBarSize"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/textViewInfoOverview"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginLeft="16dp"
-        android:layout_marginTop="64dp"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
-        android:text="Descrição do Filme"
+        android:text="@string/descricao_do_filme"
+        android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageViewMovie" />
+        app:layout_constraintTop_toBottomOf="@+id/textViewInfoOriginalTitle" />
 
     <ImageButton
         android:id="@+id/imageButtonShare"
@@ -43,4 +57,76 @@
         app:layout_constraintTop_toTopOf="@+id/imageViewMovie"
         tools:src="@drawable/ic_share_white_24dp"
         tools:srcCompat="@android:drawable/ic_menu_share" />
+
+    <TextView
+        android:id="@+id/textViewInfoRating"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="8dp"
+        android:drawableRight="@drawable/ic_like"
+        android:drawablePadding="8dp"
+        android:text="@string/_0"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageViewMovie"
+        android:drawableEnd="@drawable/ic_like" />
+
+    <TextView
+        android:id="@+id/textViewInfoPopularity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="8dp"
+        android:drawableRight="@drawable/ic_star_border_black_24dp"
+        android:drawablePadding="8dp"
+        android:text="@string/_0"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewInfoRating"
+        android:drawableEnd="@drawable/ic_star_border_black_24dp" />
+
+    <TextView
+        android:id="@+id/textViewInfoDate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginRight="24dp"
+        android:text="@string/date_empty"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toStartOf="@+id/imageButtonShare"
+        app:layout_constraintTop_toBottomOf="@+id/imageViewMovie" />
+
+    <TextView
+        android:id="@+id/textViewInfoAdult"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginRight="24dp"
+        android:text="@string/filme_adulto"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toStartOf="@+id/imageButtonShare"
+        app:layout_constraintTop_toBottomOf="@+id/textViewInfoDate" />
+
+    <TextView
+        android:id="@+id/textViewInfoOriginalTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:text="@string/titulo_original"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewInfoPopularity" />
 </android.support.constraint.ConstraintLayout>

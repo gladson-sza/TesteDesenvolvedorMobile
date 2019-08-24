@@ -8,4 +8,8 @@
     <string name="nome">Nome</string>
     <string name="pesquisar">Pesquisar</string>
     <string name="visualiza_o">Visualização</string>
+    <string name="date_empty">00/00/0000</string>
+    <string name="descricao_do_filme">Descrição do Filme</string>
+    <string name="filme_adulto">Filme Adulto</string>
+    <string name="titulo_original">Título Original:</string>
 </resources>

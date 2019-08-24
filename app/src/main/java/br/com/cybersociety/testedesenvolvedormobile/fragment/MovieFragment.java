@@ -1,6 +1,6 @@
 package br.com.cybersociety.testedesenvolvedormobile.fragment;
 
-import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -13,6 +13,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -32,17 +33,12 @@ import java.util.Date;
 import java.util.List;
 
 import br.com.cybersociety.testedesenvolvedormobile.R;
+import br.com.cybersociety.testedesenvolvedormobile.activity.MovieInformationActivity;
 import br.com.cybersociety.testedesenvolvedormobile.adapter.GridMovieAdapter;
 import br.com.cybersociety.testedesenvolvedormobile.adapter.LinearMovieAdapter;
+import br.com.cybersociety.testedesenvolvedormobile.helper.RecyclerItemClickListener;
 import br.com.cybersociety.testedesenvolvedormobile.model.entities.Movie;
-import br.com.cybersociety.testedesenvolvedormobile.fragment.DummyContent.DummyItem;
 
-/**
- * A fragment representing a list of Items.
- * <p/>
- * Activities containing this fragment MUST implement the {@link OnListFragmentInteractionListener}
- * interface.
- */
 public class MovieFragment extends Fragment {
 
     private static final int LINEAR_LAYOUT = 0;
@@ -52,7 +48,6 @@ public class MovieFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private List<Movie> movies = new ArrayList<>();
-    private OnListFragmentInteractionListener mListener;
 
     private GridMovieAdapter gridMovieAdapter;
     private LinearMovieAdapter linearMovieAdapter;
@@ -78,6 +73,7 @@ public class MovieFragment extends Fragment {
         switch (id) {
             case R.id.menu_change_layout:
                 changeLayout();
+                // Realiza as trocas entre os ícones com base no layout
                 if (current_layout == LINEAR_LAYOUT) item.setIcon(R.drawable.ic_grid_white_24dp);
                 else item.setIcon(R.drawable.ic_view_list_white_24dp);
                 break;
@@ -103,21 +99,64 @@ public class MovieFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_movie_list, container, false);
 
-        linearMovieAdapter = new LinearMovieAdapter(movies, getActivity());
-        gridMovieAdapter = new GridMovieAdapter(movies, getActivity());
         recyclerView = view.findViewById(R.id.list);
-
         createLayout();
 
         // Chama a API
         MyTask myTask = new MyTask();
-        myTask.execute("https://api.themoviedb.org/3/movie/popular?api_key=<<api_key>>&language=pt-BR");
+        myTask.execute("https://api.themoviedb.org/3/movie/popular?api_key=<<api_key>>&language=pt-BR&page=1");
 
 
         return view;
     }
 
     private void createLayout() {
+
+        linearMovieAdapter = new LinearMovieAdapter(movies, getActivity());
+        gridMovieAdapter = new GridMovieAdapter(movies, getActivity());
+
+        recyclerView.addOnItemTouchListener(
+                new RecyclerItemClickListener(getActivity(), recyclerView,
+                        new RecyclerItemClickListener.OnItemClickListener() {
+                            @Override
+                            public void onItemClick(View view, int position) {
+
+                                Movie movie = movies.get(position);
+
+                                try {
+                                    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+
+                                    Intent intent = new Intent(getActivity(), MovieInformationActivity.class);
+
+                                    intent.putExtra("adult", movie.getAdult());
+                                    intent.putExtra("title", movie.getTitle());
+                                    intent.putExtra("originalTitle", movie.getOriginalTitle());
+                                    intent.putExtra("rating", movie.getRating());
+                                    intent.putExtra("popularity", movie.getPopularity());
+                                    intent.putExtra("overview", movie.getOverview());
+                                    intent.putExtra("releasedDate", sdf.format(movie.getReleasedDate()));
+
+                                    startActivity(intent);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
+
+                            }
+
+                            @Override
+                            public void onLongItemClick(View view, int position) {
+
+                            }
+
+                            @Override
+                            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                            }
+                        })
+        );
+
+        // Verifica qual é o layout atual.
         if (current_layout == LINEAR_LAYOUT) {
             recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
             recyclerView.setAdapter(linearMovieAdapter);
@@ -127,6 +166,7 @@ public class MovieFragment extends Fragment {
         }
     }
 
+    // Evento que modifica o layout
     private void changeLayout() {
 
         if (current_layout == LINEAR_LAYOUT) {
@@ -226,21 +266,5 @@ public class MovieFragment extends Fragment {
             linearMovieAdapter.notifyDataSetChanged();
             gridMovieAdapter.notifyDataSetChanged();
         }
-    }
-
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnListFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onListFragmentInteraction(DummyItem item);
     }
 }

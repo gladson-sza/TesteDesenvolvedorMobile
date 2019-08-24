@@ -7,16 +7,14 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 import br.com.cybersociety.testedesenvolvedormobile.R;
-import br.com.cybersociety.testedesenvolvedormobile.fragment.DummyContent;
 import br.com.cybersociety.testedesenvolvedormobile.fragment.MovieFragment;
 import br.com.cybersociety.testedesenvolvedormobile.fragment.ProfileFragment;
 
-public class MainActivity extends AppCompatActivity implements MovieFragment.OnListFragmentInteractionListener {
+public class MainActivity extends AppCompatActivity {
 
     private BottomNavigationView navView;
 
@@ -78,8 +76,4 @@ public class MainActivity extends AppCompatActivity implements MovieFragment.OnL
         transaction.commit();
     }
 
-    @Override
-    public void onListFragmentInteraction(DummyContent.DummyItem item) {
-
-    }
 }
