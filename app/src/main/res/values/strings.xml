@@ -12,4 +12,7 @@
     <string name="descricao_do_filme">Descrição do Filme</string>
     <string name="filme_adulto">Filme Adulto</string>
     <string name="titulo_original">Título Original:</string>
+    <string name="salvar">SALVAR</string>
+
+    <string name="apikey_moviedb">d1f80db1bf861c571beeeb21b32e5ca6</string>
 </resources>

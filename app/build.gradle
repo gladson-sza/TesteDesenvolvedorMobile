@@ -32,4 +32,8 @@ dependencies {
 
     // Search View
     implementation 'com.miguelcatalan:materialsearchview:1.4.0'
+
+    // CircleImageView
+    implementation 'de.hdodenhof:circleimageview:3.0.1'
+
 }

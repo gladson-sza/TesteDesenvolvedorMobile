@@ -113,7 +113,7 @@ public class MovieFragment extends Fragment {
 
         // Chama a API
         MyTaskList myTaskList = new MyTaskList();
-        myTaskList.execute("https://api.themoviedb.org/3/movie/popular?api_key=<<api_key>>&language=pt-BR&page=1");
+        myTaskList.execute("https://api.themoviedb.org/3/movie/popular?api_key=d1f80db1bf861c571beeeb21b32e5ca6&language=pt-BR&page=1");
 
 
         return view;
@@ -185,7 +185,7 @@ public class MovieFragment extends Fragment {
                 @Override
                 public boolean onQueryTextSubmit(String query) {
                     MyTaskSearch myTaskSearch = new MyTaskSearch();
-                    myTaskSearch.execute("https://api.themoviedb.org/3/search/movie?api_key=<<api_key>>&language=pt-BR&query=" + query + "&page=1&include_adult=false");
+                    myTaskSearch.execute("https://api.themoviedb.org/3/search/movie?api_key=d1f80db1bf861c571beeeb21b32e5ca6&language=pt-BR&query=" + query + "&page=1&include_adult=false");
 
                     return true;
                 }
@@ -206,8 +206,9 @@ public class MovieFragment extends Fragment {
                     recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
                     recyclerView.setAdapter(linearMovieAdapter);
 
-                    ma.hideNavigation();
+                    ma.hideBottomNavigation();
                     setHasOptionsMenu(false);
+
                 }
 
                 @Override
@@ -215,9 +216,9 @@ public class MovieFragment extends Fragment {
                     MainActivity ma = (MainActivity) getActivity();
 
                     MyTaskList myTaskList = new MyTaskList();
-                    myTaskList.execute("https://api.themoviedb.org/3/movie/popular?api_key=<<api_key>>&language=pt-BR&page=1");
+                    myTaskList.execute("https://api.themoviedb.org/3/movie/popular?api_key=d1f80db1bf861c571beeeb21b32e5ca6&language=pt-BR&page=1");
 
-                    ma.showNavigation();
+                    ma.showBottomNavigation();
                     setHasOptionsMenu(true);
                 }
             });

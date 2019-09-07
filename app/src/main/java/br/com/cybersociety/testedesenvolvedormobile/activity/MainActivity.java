@@ -1,6 +1,5 @@
 package br.com.cybersociety.testedesenvolvedormobile.activity;
 
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.BottomNavigationView;
@@ -11,7 +10,6 @@ import android.support.annotation.NonNull;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Toast;
 
 import br.com.cybersociety.testedesenvolvedormobile.R;
 import br.com.cybersociety.testedesenvolvedormobile.fragment.MovieFragment;
@@ -43,6 +41,17 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    /**
+     * Métodos para exibir e escondar o BottomNavigation
+     */
+    public void hideBottomNavigation() {
+        navView.setVisibility(View.GONE);
+    }
+
+    public void showBottomNavigation() {
+        navView.setVisibility(View.VISIBLE);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,20 +80,10 @@ public class MainActivity extends AppCompatActivity {
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 
-        if (name == null || name.isEmpty()) {
-            transaction.add(R.id.frameLayout, pf);
-            navView.setSelectedItemId(R.id.navigation_profile);
-        } else transaction.add(R.id.frameLayout, mf);
+        if (name == null || name.isEmpty()) navView.setSelectedItemId(R.id.navigation_profile);
+        else navView.setSelectedItemId(R.id.navigation_movies);
 
         transaction.commit();
-    }
-
-    public void hideNavigation() {
-        navView.setVisibility(View.GONE);
-    }
-
-    public void showNavigation() {
-        navView.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -93,12 +92,9 @@ public class MainActivity extends AppCompatActivity {
      * @param fragment
      */
     public void changeFragment(Fragment fragment) {
-
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.frameLayout, fragment);
         transaction.commit();
-
-
     }
 
 }
