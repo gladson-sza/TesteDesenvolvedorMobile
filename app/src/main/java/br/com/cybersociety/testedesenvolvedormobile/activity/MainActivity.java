@@ -50,12 +50,14 @@ public class MainActivity extends AppCompatActivity {
                         navView.setSelectedItemId(R.id.navigation_profile);
                     } else {
                         changeFragment(mf);
+                        getSupportActionBar().setTitle("Filmes Populares");
                     }
 
                     return true;
                 }
                 case R.id.navigation_profile:
                     changeFragment(pf);
+                    getSupportActionBar().setTitle("Meu Perfil");
                     return true;
             }
             return false;

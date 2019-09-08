@@ -52,6 +52,7 @@ public class MovieInformationActivity extends AppCompatActivity {
         toolbarTitle = findViewById(R.id.toolbarTitle);
         toolbarTitle.setTitle(movie.getTitle());
         setSupportActionBar(toolbarTitle);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         textViewInfoAdult = findViewById(R.id.textViewInfoAdult);
         textViewInfoOriginalTitle = findViewById(R.id.textViewInfoOriginalTitle);
@@ -90,5 +91,11 @@ public class MovieInformationActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return super.onSupportNavigateUp();
     }
 }

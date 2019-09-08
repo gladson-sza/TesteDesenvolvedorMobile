@@ -118,15 +118,8 @@ public class MovieFragment extends Fragment {
 
         movies.clear(); // Limpa para garantir que não haverá duplicidade antes de chamar
 
-        // Verifica a conexão com a internet e carrega os filmes já salvos se for necessário
-        ConnectivityManager connectivityManager = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
-
-        if (networkInfo != null && networkInfo.isConnectedOrConnecting() && networkInfo.isAvailable()) {
-            String page = "https://api.themoviedb.org/3/movie/popular?api_key=d1f80db1bf861c571beeeb21b32e5ca6&language=pt-BR&page=";
-            new MyTaskList().execute(page + 1);
-            new MyTaskList().execute(page + 2);
-            new MyTaskList().execute(page + 3);
+        if (hasConnection()) {
+            loadPupularMovies();
         } else {
             Toast.makeText(getContext(), "Sem conexão disponível, carregando filmes previamente baixados...", Toast.LENGTH_LONG).show();
             loadStorageMovies();
@@ -136,17 +129,37 @@ public class MovieFragment extends Fragment {
     }
 
     /**
+     * Carrega três páginas de feed com filmes
+     */
+    private void loadPupularMovies() {
+        String page = "https://api.themoviedb.org/3/movie/popular?api_key=d1f80db1bf861c571beeeb21b32e5ca6&language=pt-BR&page=";
+        new MyTaskList().execute(page + 1);
+        new MyTaskList().execute(page + 2);
+        new MyTaskList().execute(page + 3);
+    }
+
+    /**
      * Método que carrega os filmes armazenados no banco de dados
      */
     private void loadStorageMovies() {
         MovieDAO movieDAO = new MovieDAO(getContext());
-        movies = movieDAO.listAll();
+        currentListView = movieDAO.listAll();
 
-        currentListView = movies;
+        if (current_layout == LINEAR_LAYOUT) recyclerView.setAdapter(new LinearMovieAdapter(currentListView, getActivity()));
+        else recyclerView.setAdapter(new GridMovieAdapter(currentListView, getActivity()));
 
-        recyclerView.setAdapter(new LinearMovieAdapter(currentListView, getActivity()));
         linearMovieAdapter.notifyDataSetChanged();
         gridMovieAdapter.notifyDataSetChanged();
+    }
+
+    private boolean hasConnection() {
+        // Verifica a conexão com a internet e carrega os filmes já salvos se for necessário
+        ConnectivityManager connectivityManager = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+
+        if (networkInfo != null && networkInfo.isConnectedOrConnecting() && networkInfo.isAvailable())
+            return true;
+        else return false;
     }
 
     private void createLayout(View view) {
@@ -214,10 +227,15 @@ public class MovieFragment extends Fragment {
         searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                MyTaskSearch myTaskSearch = new MyTaskSearch();
-                myTaskSearch.execute("https://api.themoviedb.org/3/search/movie?api_key=d1f80db1bf861c571beeeb21b32e5ca6&language=pt-BR&query=" + query + "&page=1&include_adult=false");
 
-                return true;
+                if (hasConnection()) {
+                    MyTaskSearch myTaskSearch = new MyTaskSearch();
+                    myTaskSearch.execute("https://api.themoviedb.org/3/search/movie?api_key=d1f80db1bf861c571beeeb21b32e5ca6&language=pt-BR&query=" + query + "&page=1&include_adult=false");
+                    return true;
+                } else {
+                    Toast.makeText(getActivity(), "Não foi possível realizar a busca, sem conexão.", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
             }
 
             @Override
@@ -245,8 +263,8 @@ public class MovieFragment extends Fragment {
             public void onSearchViewClosed() {
                 MainActivity ma = (MainActivity) getActivity();
 
-                MyTaskList myTaskList = new MyTaskList();
-                myTaskList.execute("https://api.themoviedb.org/3/movie/popular?api_key=d1f80db1bf861c571beeeb21b32e5ca6&language=pt-BR&page=1");
+                if (hasConnection()) loadPupularMovies();
+                else loadStorageMovies();
 
                 ma.showBottomNavigation();
                 setHasOptionsMenu(true);
@@ -262,13 +280,17 @@ public class MovieFragment extends Fragment {
         if (current_layout == LINEAR_LAYOUT) {
             recyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 2));
             recyclerView.setAdapter(gridMovieAdapter);
+            gridMovieAdapter.notifyDataSetChanged();
             current_layout = GRID_LAYOUT;
 
         } else {
             recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
             recyclerView.setAdapter(linearMovieAdapter);
             current_layout = LINEAR_LAYOUT;
+
         }
+
+        if (!hasConnection()) loadStorageMovies();
 
     }
 
