@@ -7,6 +7,7 @@ import br.com.cybersociety.testedesenvolvedormobile.model.entities.Movie;
 public interface IMovieDAO {
 
     void save(Movie movie);
+    void saveCollection(List<Movie> movies);
     void delete(Movie movie);
     void update(Movie movie);
 
