@@ -111,10 +111,13 @@ public class MovieFragment extends Fragment {
 
         createLayout(view);
 
-        // Chama a API
-        MyTaskList myTaskList = new MyTaskList();
-        myTaskList.execute("https://api.themoviedb.org/3/movie/popular?api_key=d1f80db1bf861c571beeeb21b32e5ca6&language=pt-BR&page=1");
+        movies.clear(); // Limpa para garantir que não haverá duplicidade antes de chamar
 
+        // Carrega 3 páginas de filmes.
+        String page = "https://api.themoviedb.org/3/movie/popular?api_key=d1f80db1bf861c571beeeb21b32e5ca6&language=pt-BR&page=";
+        new MyTaskList().execute(page + 1);
+        new MyTaskList().execute(page + 2);
+        new MyTaskList().execute(page + 3);
 
         return view;
     }
@@ -250,8 +253,8 @@ public class MovieFragment extends Fragment {
         @Override
         protected String doInBackground(String... strings) {
             String stringUrl = strings[0];
-            InputStream inputStream = null;
-            InputStreamReader inputStreamReader = null;
+            InputStream inputStream;
+            InputStreamReader inputStreamReader;
             StringBuffer buffer = new StringBuffer();
 
             try {
@@ -386,8 +389,6 @@ public class MovieFragment extends Fragment {
                 JSONObject jsonObject = new JSONObject(s);
 
                 JSONArray keyValue = jsonObject.getJSONArray("results");
-
-                movies.clear(); // Limpa para garantir que não haverá duplicidade
 
                 for (int i = 0; i < jsonObject.length(); i++) {
                     JSONObject jsonObjectValue = keyValue.getJSONObject(i);

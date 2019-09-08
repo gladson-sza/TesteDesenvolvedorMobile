@@ -2,8 +2,10 @@ package br.com.cybersociety.testedesenvolvedormobile.fragment;
 
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,7 +36,7 @@ public class ProfileFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
 
-        imageViewProfile = view.findViewById(R.id.image);
+        imageViewProfile = view.findViewById(R.id.imageProfile);
         editTextProfileName = view.findViewById(R.id.editTextProfileName);
         buttonProfileSave = view.findViewById(R.id.buttonProfileSave);
 
@@ -45,6 +47,19 @@ public class ProfileFragment extends Fragment {
         if (!name.isEmpty()) {
             editTextProfileName.setText(name);
         }
+
+        imageViewProfile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+
+
+                if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
+                    startActivityForResult(intent, 100);
+                }
+            }
+        });
 
         buttonProfileSave.setOnClickListener(new View.OnClickListener() {
             @Override

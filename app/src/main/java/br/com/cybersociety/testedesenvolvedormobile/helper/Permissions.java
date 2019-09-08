@@ -17,13 +17,9 @@ public class Permissions {
 
             List<String> permissionsList = new ArrayList<>();
 
-            /* Percorre as permissões passadas,
-             * verificando uma a uma
-             * se já tem a permissao liberada
-             */
             for (String permission : permissions) {
-                Boolean havePermissao = ContextCompat.checkSelfPermission(activity, permission) == PackageManager.PERMISSION_GRANTED;
-                if (!havePermissao) permissionsList.add(permission);
+                boolean havePermission = ContextCompat.checkSelfPermission(activity, permission) == PackageManager.PERMISSION_GRANTED;
+                if (!havePermission) permissionsList.add(permission);
             }
 
             // Caso a lista esteja vazia, não é necessário solicitar permissão

@@ -1,6 +1,10 @@
 package br.com.cybersociety.testedesenvolvedormobile.activity;
 
+import android.Manifest;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
@@ -14,8 +18,14 @@ import android.view.View;
 import br.com.cybersociety.testedesenvolvedormobile.R;
 import br.com.cybersociety.testedesenvolvedormobile.fragment.MovieFragment;
 import br.com.cybersociety.testedesenvolvedormobile.fragment.ProfileFragment;
+import br.com.cybersociety.testedesenvolvedormobile.helper.Permissions;
 
 public class MainActivity extends AppCompatActivity {
+
+    private String[] permissions = new String[]{
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.CAMERA
+    };
 
     private BottomNavigationView navView;
 
@@ -57,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Permissions.validatePermissions(permissions, this, 1);
         init();
     }
 
@@ -64,8 +75,6 @@ public class MainActivity extends AppCompatActivity {
      * Inicializa e configura os componentes.
      */
     private void init() {
-
-
         SharedPreferences p = getSharedPreferences("NAME_PREFERENCE", MODE_PRIVATE);
         name = p.getString("name", "");
 
@@ -95,6 +104,36 @@ public class MainActivity extends AppCompatActivity {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.frameLayout, fragment);
         transaction.commit();
+    }
+
+    /**
+     * Cria uma janela informando que a permição foi negada.
+     */
+    public void permissionDeniedMessage() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Permissão negada!");
+        builder.setMessage("Para utilizar o app corretamente, você deve aceitar as permições.");
+        builder.setCancelable(false);
+        builder.setPositiveButton("Confirmar", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                finish();
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        for (int permissionResult : grantResults) {
+            if (permissionResult == PackageManager.PERMISSION_DENIED) {
+                permissionDeniedMessage();
+            }
+        }
     }
 
 }
