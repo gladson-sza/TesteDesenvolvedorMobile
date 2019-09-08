@@ -35,7 +35,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 " name VARCHAR(50)," +
                 " photo BLOB);";
 
-        String createUser = "INSERT INTO User (id) VALUES(0);"; // Só haverá um usuário neste banco.
+        String createUser = "INSERT INTO User (id, name, photo) VALUES(0, '', null);"; // Só haverá um usuário neste banco.
 
         try {
             db.execSQL(sqlMovie);

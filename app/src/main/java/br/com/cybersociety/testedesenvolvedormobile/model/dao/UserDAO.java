@@ -50,7 +50,7 @@ public class UserDAO implements IUserDAO {
             User user = new User();
 
             user.setName(c.getString(c.getColumnIndex("name")));
-            user.setPhoto(c.getBlob(1));
+            user.setPhoto(c.getBlob(c.getColumnIndex("photo")));
 
             list.add(user);
         }

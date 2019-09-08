@@ -7,6 +7,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -20,7 +23,12 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+
 import br.com.cybersociety.testedesenvolvedormobile.R;
+import br.com.cybersociety.testedesenvolvedormobile.model.dao.UserDAO;
+import br.com.cybersociety.testedesenvolvedormobile.model.entities.User;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -46,16 +54,25 @@ public class ProfileFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
 
+        UserDAO userDAO = new UserDAO(getActivity());
+        User user = userDAO.getUser();
+
         imageViewProfile = view.findViewById(R.id.imageProfile);
         editTextProfileName = view.findViewById(R.id.editTextProfileName);
         buttonProfileSave = view.findViewById(R.id.buttonProfileSave);
 
-        SharedPreferences sp = getActivity().getSharedPreferences("NAME_PREFERENCE",Context.MODE_PRIVATE);
+        // Verifica se há um nome no banco de dados.
+        if (user.getName() != null) {
+            editTextProfileName.setText(user.getName());
+        }
 
-        String name = sp.getString("name", "");
+        // Verifica se há uma imagem no banco de dados.
+        if (user.getPhoto() != null) {
 
-        if (!name.isEmpty()) {
-            editTextProfileName.setText(name);
+            ByteArrayInputStream imageStream = new ByteArrayInputStream(user.getPhoto());
+            Bitmap imageBitmap = BitmapFactory.decodeStream(imageStream);
+
+            imageViewProfile.setImageBitmap(imageBitmap);
         }
 
         imageViewProfile.setOnClickListener(new View.OnClickListener() {
@@ -98,19 +115,26 @@ public class ProfileFragment extends Fragment {
         buttonProfileSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (!editTextProfileName.getText().toString().isEmpty()) {
 
-                String tempName = editTextProfileName.getText().toString();
+                    Bitmap bitmap = ((BitmapDrawable) imageViewProfile.getDrawable()).getBitmap();
+                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+                    byte[] imageBytes = outputStream.toByteArray();
 
-                if (tempName != null && !tempName.isEmpty()) {
-                    SharedPreferences sp = getActivity().getSharedPreferences("NAME_PREFERENCE",Context.MODE_PRIVATE);
-                    SharedPreferences.Editor editor = sp.edit();
-                    editor.putString("name", tempName);
-                    editor.commit();
-                    Toast.makeText(getActivity(), "Nome Salvo", Toast.LENGTH_SHORT).show();
+                    UserDAO userDAO = new UserDAO(getActivity());
+                    User user = userDAO.getUser();
+
+                    // Obtém os dados e atualiza o banco
+                    user.setName(editTextProfileName.getText().toString());
+                    user.setPhoto(imageBytes);
+                    userDAO.update(user);
+
+                    imageViewProfile.setImageBitmap(bitmap);
+                    Toast.makeText(getActivity(), "Dados Atualizados", Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(getActivity(), "Preencha o Seu Nome", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), "Seu nome não pode ficar em branco!", Toast.LENGTH_SHORT).show();
                 }
-
             }
         });
 
@@ -139,6 +163,7 @@ public class ProfileFragment extends Fragment {
             }
 
             if (image != null) imageViewProfile.setImageBitmap(image);
+
         }
 
     }

@@ -3,7 +3,6 @@ package br.com.cybersociety.testedesenvolvedormobile.activity;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.design.widget.BottomNavigationView;
@@ -14,11 +13,14 @@ import android.support.annotation.NonNull;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 import br.com.cybersociety.testedesenvolvedormobile.R;
 import br.com.cybersociety.testedesenvolvedormobile.fragment.MovieFragment;
 import br.com.cybersociety.testedesenvolvedormobile.fragment.ProfileFragment;
 import br.com.cybersociety.testedesenvolvedormobile.helper.Permissions;
+import br.com.cybersociety.testedesenvolvedormobile.model.dao.UserDAO;
+import br.com.cybersociety.testedesenvolvedormobile.model.entities.User;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -29,8 +31,6 @@ public class MainActivity extends AppCompatActivity {
 
     private BottomNavigationView navView;
 
-    private String name;
-
     private MovieFragment mf;
     private ProfileFragment pf;
 
@@ -40,9 +40,19 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
             switch (item.getItemId()) {
-                case R.id.navigation_movies:
-                    changeFragment(mf);
+                case R.id.navigation_movies: {
+                    UserDAO userDAO = new UserDAO(getApplicationContext());
+                    User user = userDAO.getUser();
+
+                    if (user.getName() == null || user.getName().isEmpty()) {
+                        Toast.makeText(MainActivity.this, "Você ainda não salvou seu nome", Toast.LENGTH_SHORT).show();
+                        navView.setSelectedItemId(R.id.navigation_profile);
+                    } else {
+                        changeFragment(mf);
+                    }
+
                     return true;
+                }
                 case R.id.navigation_profile:
                     changeFragment(pf);
                     return true;
@@ -75,8 +85,9 @@ public class MainActivity extends AppCompatActivity {
      * Inicializa e configura os componentes.
      */
     private void init() {
-        SharedPreferences p = getSharedPreferences("NAME_PREFERENCE", MODE_PRIVATE);
-        name = p.getString("name", "");
+
+        UserDAO userDAO = new UserDAO(getApplicationContext());
+        User user = userDAO.getUser();
 
         pf = new ProfileFragment();
         mf = new MovieFragment();
@@ -89,7 +100,9 @@ public class MainActivity extends AppCompatActivity {
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 
-        if (name == null || name.isEmpty()) navView.setSelectedItemId(R.id.navigation_profile);
+
+        if (user.getName() == null || user.getName().isEmpty())
+            navView.setSelectedItemId(R.id.navigation_profile);
         else navView.setSelectedItemId(R.id.navigation_movies);
 
         transaction.commit();
