@@ -1,6 +1,9 @@
 package br.com.cybersociety.testedesenvolvedormobile.fragment;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -14,6 +17,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.Toast;
 
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
 
@@ -40,6 +44,7 @@ import br.com.cybersociety.testedesenvolvedormobile.activity.MovieInformationAct
 import br.com.cybersociety.testedesenvolvedormobile.adapter.GridMovieAdapter;
 import br.com.cybersociety.testedesenvolvedormobile.adapter.LinearMovieAdapter;
 import br.com.cybersociety.testedesenvolvedormobile.helper.RecyclerItemClickListener;
+import br.com.cybersociety.testedesenvolvedormobile.model.dao.MovieDAO;
 import br.com.cybersociety.testedesenvolvedormobile.model.entities.Movie;
 
 public class MovieFragment extends Fragment {
@@ -113,13 +118,35 @@ public class MovieFragment extends Fragment {
 
         movies.clear(); // Limpa para garantir que não haverá duplicidade antes de chamar
 
-        // Carrega 3 páginas de filmes.
-        String page = "https://api.themoviedb.org/3/movie/popular?api_key=d1f80db1bf861c571beeeb21b32e5ca6&language=pt-BR&page=";
-        new MyTaskList().execute(page + 1);
-        new MyTaskList().execute(page + 2);
-        new MyTaskList().execute(page + 3);
+        // Verifica a conexão com a internet e carrega os filmes já salvos se for necessário
+        ConnectivityManager connectivityManager = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+
+        if (networkInfo != null && networkInfo.isConnectedOrConnecting() && networkInfo.isAvailable()) {
+            String page = "https://api.themoviedb.org/3/movie/popular?api_key=d1f80db1bf861c571beeeb21b32e5ca6&language=pt-BR&page=";
+            new MyTaskList().execute(page + 1);
+            new MyTaskList().execute(page + 2);
+            new MyTaskList().execute(page + 3);
+        } else {
+            Toast.makeText(getContext(), "Sem conexão disponível, carregando filmes previamente baixados...", Toast.LENGTH_LONG).show();
+            loadStorageMovies();
+        }
 
         return view;
+    }
+
+    /**
+     * Método que carrega os filmes armazenados no banco de dados
+     */
+    private void loadStorageMovies() {
+        MovieDAO movieDAO = new MovieDAO(getContext());
+        movies = movieDAO.listAll();
+
+        currentListView = movies;
+
+        recyclerView.setAdapter(new LinearMovieAdapter(currentListView, getActivity()));
+        linearMovieAdapter.notifyDataSetChanged();
+        gridMovieAdapter.notifyDataSetChanged();
     }
 
     private void createLayout(View view) {
@@ -184,47 +211,47 @@ public class MovieFragment extends Fragment {
             recyclerView.setAdapter(gridMovieAdapter);
         }
 
-            searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
-                @Override
-                public boolean onQueryTextSubmit(String query) {
-                    MyTaskSearch myTaskSearch = new MyTaskSearch();
-                    myTaskSearch.execute("https://api.themoviedb.org/3/search/movie?api_key=d1f80db1bf861c571beeeb21b32e5ca6&language=pt-BR&query=" + query + "&page=1&include_adult=false");
+        searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                MyTaskSearch myTaskSearch = new MyTaskSearch();
+                myTaskSearch.execute("https://api.themoviedb.org/3/search/movie?api_key=d1f80db1bf861c571beeeb21b32e5ca6&language=pt-BR&query=" + query + "&page=1&include_adult=false");
 
-                    return true;
-                }
+                return true;
+            }
 
-                @Override
-                public boolean onQueryTextChange(String newText) {
-                    return false;
-                }
-            });
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
 
-            searchView.setOnSearchViewListener(new MaterialSearchView.SearchViewListener() {
-                @Override
-                public void onSearchViewShown() {
-                    MainActivity ma = (MainActivity) getActivity();
+        searchView.setOnSearchViewListener(new MaterialSearchView.SearchViewListener() {
+            @Override
+            public void onSearchViewShown() {
+                MainActivity ma = (MainActivity) getActivity();
 
-                    currentListView.clear();
-                    linearMovieAdapter.notifyDataSetChanged();
-                    recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-                    recyclerView.setAdapter(linearMovieAdapter);
+                currentListView.clear();
+                linearMovieAdapter.notifyDataSetChanged();
+                recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+                recyclerView.setAdapter(linearMovieAdapter);
 
-                    ma.hideBottomNavigation();
-                    setHasOptionsMenu(false);
+                ma.hideBottomNavigation();
+                setHasOptionsMenu(false);
 
-                }
+            }
 
-                @Override
-                public void onSearchViewClosed() {
-                    MainActivity ma = (MainActivity) getActivity();
+            @Override
+            public void onSearchViewClosed() {
+                MainActivity ma = (MainActivity) getActivity();
 
-                    MyTaskList myTaskList = new MyTaskList();
-                    myTaskList.execute("https://api.themoviedb.org/3/movie/popular?api_key=d1f80db1bf861c571beeeb21b32e5ca6&language=pt-BR&page=1");
+                MyTaskList myTaskList = new MyTaskList();
+                myTaskList.execute("https://api.themoviedb.org/3/movie/popular?api_key=d1f80db1bf861c571beeeb21b32e5ca6&language=pt-BR&page=1");
 
-                    ma.showBottomNavigation();
-                    setHasOptionsMenu(true);
-                }
-            });
+                ma.showBottomNavigation();
+                setHasOptionsMenu(true);
+            }
+        });
 
 
     }
@@ -417,6 +444,15 @@ public class MovieFragment extends Fragment {
             currentListView = movies;
             linearMovieAdapter.notifyDataSetChanged();
             gridMovieAdapter.notifyDataSetChanged();
+
+            MovieDAO movieDAO = new MovieDAO(getActivity());
+            movieDAO.saveCollection(movies);
+        }
+
+        @Override
+        protected void onCancelled() {
+            super.onCancelled();
+
         }
     }
 }

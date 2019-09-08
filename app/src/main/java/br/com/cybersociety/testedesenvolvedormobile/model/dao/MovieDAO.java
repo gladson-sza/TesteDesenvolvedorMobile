@@ -28,24 +28,30 @@ public class MovieDAO implements IMovieDAO {
 
     @Override
     public void save(Movie movie) {
-        ContentValues cv = new ContentValues();
-        cv.put("title", movie.getId());
 
-        if (movie.getAdult()) {
-            cv.put("adult", "y");
-        } else {
-            cv.put("adult", "n");
+        try {
+            ContentValues cv = new ContentValues();
+
+            cv.put("id", movie.getId());
+
+            if (movie.getAdult()) {
+                cv.put("adult", "y");
+            } else {
+                cv.put("adult", "n");
+            }
+
+            cv.put("originalLanguage", movie.getOriginalLanguage());
+            cv.put("title", movie.getTitle());
+            cv.put("originalTitle", movie.getOriginalTitle());
+            cv.put("overview", movie.getOverview());
+            cv.put("popularity", movie.getPopularity());
+            cv.put("rating", movie.getRating());
+            cv.put("releasedDate", new SimpleDateFormat("dd/MM/yyyy").format(movie.getReleasedDate()));
+
+            writer.insert(DBHelper.TABLE_MOVIE, null, cv);
+        } catch (Exception e) {
+
         }
-
-        cv.put("originalLanguage", movie.getOriginalLanguage());
-        cv.put("title", movie.getTitle());
-        cv.put("originalTitle", movie.getOriginalTitle());
-        cv.put("overview", movie.getOverview());
-        cv.put("popularity", movie.getPopularity());
-        cv.put("rating", movie.getRating());
-        cv.put("releasedDate", new SimpleDateFormat("dd/MM/yyyy").format(movie.getReleasedDate()));
-
-        writer.insert(DBHelper.TABLE_MOVIE, null, cv);
     }
 
     @Override
@@ -98,7 +104,7 @@ public class MovieDAO implements IMovieDAO {
             Movie movie = new Movie();
 
             // Verifique se é um filme adulto
-            char adult = c.getString(c.getColumnIndex("id")).charAt(0);
+            char adult = c.getString(c.getColumnIndex("adult")).charAt(0);
             if (adult == 'y') {
                 movie.setAdult(true);
             } else {

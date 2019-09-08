@@ -1,9 +1,11 @@
 package br.com.cybersociety.testedesenvolvedormobile.activity;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import java.text.ParseException;
@@ -21,6 +23,8 @@ public class MovieInformationActivity extends AppCompatActivity {
     private TextView textViewInfoOverview;
     private TextView textViewInfoPopularity;
     private TextView textViewInfoRating;
+
+    private ImageButton buttonShare;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,5 +67,28 @@ public class MovieInformationActivity extends AppCompatActivity {
         textViewInfoOverview.setText(movie.getOverview());
         textViewInfoPopularity.setText(String.format("%.2f", movie.getPopularity()));
         textViewInfoRating.setText(String.format("%.2f", movie.getRating()));
+
+        // Botão de compartilhamento
+        buttonShare = findViewById(R.id.imageButtonShare);
+        buttonShare.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                StringBuilder stringBuilder = new StringBuilder();
+                stringBuilder.append("Filme: " + textViewInfoOriginalTitle.getText().toString() + "\n");
+                stringBuilder.append(textViewInfoAdult.getText().toString()  + "\n");
+                stringBuilder.append("Overview: " + textViewInfoOverview.getText().toString() + "\n");
+
+                Intent sendIntent = new Intent();
+                sendIntent.setAction(Intent.ACTION_SEND);
+                sendIntent.putExtra(Intent.EXTRA_TEXT, stringBuilder.toString());
+                sendIntent.setType("text/plain");
+
+                Intent shareIntent = Intent.createChooser(sendIntent, null);
+                startActivity(shareIntent);
+
+            }
+        });
+
     }
 }
